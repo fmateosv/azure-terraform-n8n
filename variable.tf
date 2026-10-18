@@ -49,12 +49,7 @@ variable "admin_username" {
   default     = "azureuser"
 }
 
-variable "admin_password" {
-  description = "Contraseña del usuario administrador"
-  type        = string
-  sensitive   = true
-  default     = "n8nGlintt!." # ⚠️ REEMPLAZA esto o usa az keyvault para mayor seguridad
-}
+
 ############################################################
 # Imagen de la máquina virtual
 ############################################################
