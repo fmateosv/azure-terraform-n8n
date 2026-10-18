@@ -1,22 +1,97 @@
-terraform {
-  required_version = ">= 1.3.0"
-
-  required_providers {
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.0"
-    }
-  }
+t############################################################
+# Variables globales
+############################################################
+variable "resource_group_name" {
+  description = "Nombre del grupo de recursos donde se despliega"
+  type        = string
+  default     = "rg-espana-dev-001"
 }
 
-provider "azurerm" {
-  features {}
+variable "location" {
+  description = "Región de Azure"
+  type        = string
+  default     = "spaincentral"
+}
 
-  # Conexión a tu suscripción
-  subscription_id = "aafe7cdf-ec4b-4062-b952-985b47394bd5"
-  tenant_id       = "f9082694-5379-4912-bbe1-1c5e9b6737d7"
+############################################################
+# Variables de red
+############################################################
+variable "vnet_name" {
+  description = "Nombre de la red virtual"
+  type        = string
+  default     = "vnet-fco"
+}
 
-  # (opcional, solo si usas un Service Principal)
-  client_id     = "723451f1-9252-4349-823f-3501983dc879"
-  client_secret = "qNc8Q~FzeLSiNncWPHYvQ7Qe2qMTNP8EWoVsTa4s"
+variable "vnet_address_space" {
+  description = "Espacio de direcciones de la VNet"
+  type        = list(string)
+  default     = ["10.0.0.0/24"]
+}
+
+variable "subnet_name" {
+  description = "Nombre de la subred"
+  type        = string
+  default     = "subnet-fco-host"
+}
+
+variable "subnet_prefix" {
+  description = "Prefijo de la subred"
+  type        = string
+  default     = "10.0.0.0/27"
+}
+
+############################################################
+# Variables de máquina virtual
+############################################################
+variable "admin_username" {
+  description = "Usuario administrador de la VM"
+  type        = string
+  default     = "azureuser"
+}
+
+variable "admin_password" {
+  description = "Contraseña del usuario administrador"
+  type        = string
+  sensitive   = true
+  default     = "n8nGlintt!." # ⚠️ REEMPLAZA esto o usa az keyvault para mayor seguridad
+}
+############################################################
+# Imagen de la máquina virtual
+############################################################
+
+variable "vm_image_publisher" {
+  description = "Publisher de la imagen"
+  type        = string
+  default     = "Canonical"
+}
+
+variable "vm_image_offer" {
+  description = "Offer de la imagen"
+  type        = string
+  default     = "0001-com-ubuntu-server-jammy"
+}
+
+variable "vm_image_sku" {
+  description = "SKU de la imagen"
+  type        = string
+  default     = "22_04-lts-gen2"
+}
+
+variable "vm_image_version" {
+  description = "Versión de la imagen"
+  type        = string
+  default     = "latest"
+}
+
+############################################################
+# Tags globales
+############################################################
+variable "tags" {
+  description = "Etiquetas comunes para los recursos"
+  type        = map(string)
+  default = {
+    environment = "Dev"
+    owner       = "Francisco Mateos"
+    costcenter  = "finops"
+  }
 }
