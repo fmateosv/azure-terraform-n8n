@@ -1,0 +1,40 @@
+name: Crear rama y Pull Request automático
+
+on:
+  workflow_dispatch:   # permite lanzarlo manualmente
+
+jobs:
+  create_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar git
+        run: |
+          git config --global user.email "bot@n8n-deploy.com"
+          git config --global user.name "Terraform Automation Bot"
+
+      - name: Crear nueva rama
+        run: |
+          git checkout -b feature/github-actions-deploy
+          # Si necesitas copiar archivos nuevos, hazlo aquí
+          git add variables.tf .github/workflows/terraform-deploy.yml README-DEPLOY.md
+          git commit -m "Add Terraform deploy workflow and secure variables"
+          git push origin feature/github-actions-deploy
+
+      - name: Crear Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_API }}
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_API }}
+          branch: feature/github-actions-deploy
+          base: main
+          title: "Add Terraform deploy workflow and secure variables"
+          body: |
+            Este PR agrega:
+            - Workflow de despliegue Terraform (`terraform-deploy.yml`)
+            - Variable `admin_password` sensible
+            - Documentación (`README-DEPLOY.md`)
