@@ -32,4 +32,5 @@ jobs:
 
       - name: Mostrar resultado
         if: ${{ steps.create-pr.outputs.pull-request-number }}
-        run: echo "Pull request creada: ${{ steps.create-pr.outputs.pull-request-url }}"
+        run: |
+          echo "Pull request creada: ${{ steps.create-pr.outputs.pull-request-url }}"
