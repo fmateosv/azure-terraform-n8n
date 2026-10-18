@@ -13,33 +13,24 @@ jobs:
 
     steps:
       - name: Clonar repositorio
-        uses: actions/checkout@v4
-
-      - name: Configurar git
-        run: |
-          git config --global user.email "bot@n8n-deploy.com"
-          git config --global user.name "Terraform Automation Bot"
-
-      - name: Crear nueva rama
-        run: |
-          git checkout -b feature/github-actions-deploy
-          git add -A
-          if git diff --cached --quiet; then
-            echo "No hay cambios para incluir en una pull request."
-            exit 0
-          fi
-          git commit -m "Add Terraform deploy workflow and secure variables"
-          git push origin feature/github-actions-deploy
+        uses: actions/checkout@v6
 
       - name: Crear Pull Request
-        uses: peter-evans/create-pull-request@v6
+        id: create-pr
+        uses: peter-evans/create-pull-request@v8.1.1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: feature/github-actions-deploy
           base: main
+          commit-message: "Add Terraform deploy workflow and secure variables"
           title: "Add Terraform deploy workflow and secure variables"
           body: |
             Este PR agrega:
             - Workflow de despliegue Terraform (`terraform-deploy.yml`)
             - Variable `admin_password` sensible
             - Documentación (`README-DEPLOY.md`)
+
+      - name: Mostrar resultado
+        if: ${{ steps.create-pr.outputs.pull-request-number }}
+        run: |
+          echo "Pull request creada: ${{ steps.create-pr.outputs.pull-request-url }}"
