@@ -179,13 +179,3 @@ resource "azurerm_linux_virtual_machine" "ubuntu_vm" {
   tags = var.tags
 }
 
-############################################################
-# Outputs principales
-############################################################
-output "vm_public_ip" {
-  value = azurerm_public_ip.ubuntu_pip.ip_address
-}
-
-output "vm_private_ip" {
-  value = azurerm_network_interface.ubuntu_nic.private_ip_address
-}
