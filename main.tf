@@ -2,25 +2,7 @@
 # Resource Group existente
 ############################################################
 data "azurerm_resource_group" "rg" {
-  name = "rg-espana-dev-001"
-}
-
-############################################################
-# Variables generales
-############################################################
-variable "location"            { default = "westeurope" }
-variable "resource_group_name" { default = "rg-espana-dev-001" }
-variable "vnet_name"           { default = "vnet-fco" }
-variable "subnet_name"         { default = "subnet-fco-host" }
-variable "vnet_address_space"  { default = ["10.0.0.0/24"] }
-variable "subnet_prefix"       { default = "10.0.0.0/28" }
-variable "admin_username"      { default = "azureuser" }
-variable "admin_password"      { default = "M1cr0s0ft123!" }
-variable "tags" {
-  default = {
-    environment = "dev"
-    owner       = "Francisco Mateos"
-  }
+  name = var.resource_group_name
 }
 
 ############################################################

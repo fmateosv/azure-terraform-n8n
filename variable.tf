@@ -1,4 +1,4 @@
-t############################################################
+############################################################
 # Variables globales
 ############################################################
 variable "resource_group_name" {
@@ -47,6 +47,12 @@ variable "admin_username" {
   description = "Usuario administrador de la VM"
   type        = string
   default     = "azureuser"
+}
+
+variable "admin_password" {
+  description = "Contraseña estable del administrador de la VM"
+  type        = string
+  sensitive   = true
 }
 
 
