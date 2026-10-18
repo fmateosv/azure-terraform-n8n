@@ -1,10 +1,10 @@
-name: Crear rama y Pull Request automático
+name: Crear Pull Request desde la rama seleccionada
 
 on:
   workflow_dispatch:   # permite lanzarlo manualmente
 
 permissions:
-  contents: write
+  contents: read
   pull-requests: write
 
 jobs:
@@ -12,25 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v6
-
       - name: Crear Pull Request
-        id: create-pr
-        uses: peter-evans/create-pull-request@v8.1.1
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: feature/github-actions-deploy
-          base: main
-          commit-message: "Add Terraform deploy workflow and secure variables"
-          title: "Add Terraform deploy workflow and secure variables"
-          body: |
-            Este PR agrega:
-            - Workflow de despliegue Terraform (`terraform-deploy.yml`)
-            - Variable `admin_password` sensible
-            - Documentación (`README-DEPLOY.md`)
-
-      - name: Mostrar resultado
-        if: ${{ steps.create-pr.outputs.pull-request-number }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HEAD_BRANCH: ${{ github.ref_name }}
+          BASE_BRANCH: main
         run: |
-          echo "Pull request creada: ${{ steps.create-pr.outputs.pull-request-url }}"
+          if [ "$HEAD_BRANCH" = "$BASE_BRANCH" ]; then
+            echo "::error::Ejecuta este workflow seleccionando una rama distinta de main."
+            exit 1
+          fi
+
+          existing_pr=$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$HEAD_BRANCH" --base "$BASE_BRANCH" --json url --jq '.[0].url')
+          if [ -n "$existing_pr" ]; then
+            echo "Ya existe una pull request: $existing_pr"
+          else
+            gh pr create \
+              --repo "$GITHUB_REPOSITORY" \
+              --base "$BASE_BRANCH" \
+              --head "$HEAD_BRANCH" \
+              --title "Cambios de infraestructura" \
+              --body "Pull request generada para revisar los cambios de la rama $HEAD_BRANCH."
+          fi
