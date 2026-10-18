@@ -19,7 +19,7 @@ jobs:
         id: create-pr
         uses: peter-evans/create-pull-request@v8.1.1
         with:
-          token: ${{ secrets.GIHUB_API }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: feature/github-actions-deploy
           base: main
           commit-message: "Add Terraform deploy workflow and secure variables"
