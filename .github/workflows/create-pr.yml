@@ -3,6 +3,10 @@ name: Crear rama y Pull Request automático
 on:
   workflow_dispatch:   # permite lanzarlo manualmente
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   create_pr:
     runs-on: ubuntu-latest
@@ -19,17 +23,18 @@ jobs:
       - name: Crear nueva rama
         run: |
           git checkout -b feature/github-actions-deploy
-          # Si necesitas copiar archivos nuevos, hazlo aquí
-          git add variables.tf .github/workflows/terraform-deploy.yml README-DEPLOY.md
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No hay cambios para incluir en una pull request."
+            exit 0
+          fi
           git commit -m "Add Terraform deploy workflow and secure variables"
           git push origin feature/github-actions-deploy
 
       - name: Crear Pull Request
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_API }}
         uses: peter-evans/create-pull-request@v6
         with:
-          token: ${{ secrets.GITHUB_API }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           branch: feature/github-actions-deploy
           base: main
           title: "Add Terraform deploy workflow and secure variables"
