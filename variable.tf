@@ -59,29 +59,32 @@ variable "admin_password" {
 ############################################################
 # Imagen de la máquina virtual
 ############################################################
+
 variable "vm_image_publisher" {
   description = "Publisher de la imagen"
   type        = string
   default     = "Canonical"
 }
- 
+
 variable "vm_image_offer" {
   description = "Offer de la imagen"
   type        = string
   default     = "0001-com-ubuntu-server-jammy"
 }
- 
+
 variable "vm_image_sku" {
   description = "SKU de la imagen"
   type        = string
   default     = "22_04-lts-gen2"
 }
- 
+
 variable "vm_image_version" {
   description = "Versión de la imagen"
   type        = string
   default     = "latest"
 }
+
+
  
 ############################################################
 # Tags globales
