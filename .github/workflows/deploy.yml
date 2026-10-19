@@ -37,6 +37,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Configure Git identity
+        run: |
+          git config --global user.name "Francisco Mateos"
+          git config --global user.email "francisco.mateos@glinttglobal.com"
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
@@ -49,6 +54,22 @@ jobs:
             -backend-config="container_name=${AZURE_STORAGE_CONTAINER}" \
             -backend-config="key=${AZURE_STORAGE_KEY}" \
             -backend-config="sas_token=${AZURE_STORAGE_SAS_TOKEN}"
+
+      - name: Ensure Remote State Exists (import if missing)
+        run: |
+          echo "🔎 Checking if remote terraform.tfstate exists..."
+          az storage blob show \
+            --account-name ${AZURE_STORAGE_ACCOUNT} \
+            --container-name ${AZURE_STORAGE_CONTAINER} \
+            --name ${AZURE_STORAGE_KEY} \
+            --sas-token ${AZURE_STORAGE_SAS_TOKEN} \
+            || (
+              echo "⚠️  State file not found. Importing existing Azure resources to initialize remote tfstate..."
+              terraform import azurerm_virtual_network.vnet "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/virtualNetworks/vnet-fco" || true
+              terraform import azurerm_network_security_group.subnet_nsg "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/networkSecurityGroups/nsg-ubuntu-n8n" || true
+              terraform import azurerm_availability_set.n8n_asg "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Compute/availabilitySets/as-n8n" || true
+              terraform import azurerm_public_ip.ubuntu_pip "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/publicIPAddresses/pip-ubuntu-n8n" || true
+            )
 
       - name: Terraform Validate
         run: terraform validate
