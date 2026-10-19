@@ -2,7 +2,7 @@
 # Network Interface (NIC) sin IP pública
 ############################################################
 resource "azurerm_network_interface" "ubuntu_nic" {
-  name                = "nic-ubuntu-n8n"
+  name                = "nic-ubuntu-n8n01"
   location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
@@ -19,7 +19,7 @@ resource "azurerm_network_interface" "ubuntu_nic" {
 # Virtual Machine Ubuntu 22.04 LTS GEN2
 ############################################################
 resource "azurerm_linux_virtual_machine" "ubuntu_vm" {
-  name                            = "vm-ubuntu-n8n"
+  name                            = "vm-ubuntu-n8n01"
   location                        = var.location
   resource_group_name             = data.azurerm_resource_group.rg.name
   size                            = "Standard_B1s"

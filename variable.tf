@@ -19,7 +19,7 @@ variable "location" {
 variable "vnet_name" {
   description = "Nombre de la red virtual"
   type        = string
-  default     = "vnet-fco"
+  default     = "vnet-fco-01"
 }
  
 variable "vnet_address_space" {
@@ -31,7 +31,7 @@ variable "vnet_address_space" {
 variable "subnet_name" {
   description = "Nombre de la subred"
   type        = string
-  default     = "subnet-fco-host"
+  default     = "subnet-fco-host-01"
 }
  
 variable "subnet_prefix" {
