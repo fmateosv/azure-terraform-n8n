@@ -49,12 +49,24 @@ jobs:
 
       - name: Terraform Init (backend remoto)
         run: |
+          echo "🔧 Initializing Terraform backend..."
           terraform init \
             -backend-config="storage_account_name=${AZURE_STORAGE_ACCOUNT}" \
             -backend-config="container_name=${AZURE_STORAGE_CONTAINER}" \
             -backend-config="key=${AZURE_STORAGE_KEY}" \
-            -backend-config="sas_token=${AZURE_STORAGE_SAS_TOKEN}"
+            -backend-config="sas_token=${AZURE_STORAGE_SAS_TOKEN}" \
+            -backend-config="use_azuread_auth=false" | tee init-log.txt
 
+          echo "📄 Terraform Init Output:"
+          cat init-log.txt
+
+          if grep -q "Successfully configured the backend" init-log.txt; then
+            echo "✅ Backend remoto configurado correctamente."
+          else
+            echo "❌ ERROR: El backend remoto no se configuró. Revisa el SAS token o permisos del container."
+            exit 1
+          fi
+          
       - name: Ensure Remote State Exists (import if missing)
         shell: bash
         run: |
