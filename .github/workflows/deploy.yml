@@ -1,4 +1,4 @@
-name: Deploy Terraform to Azure
+name: Deploy Terraform to Azure 
 
 on:
   push:
@@ -16,78 +16,25 @@ jobs:
     name: Terraform Deploy to Azure
 
     env:
-      # Credenciales de Azure para el proveedor
       ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
       ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.ARM_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.ARM_TENANT_ID }}
-
-      # Variables personalizadas
       UBUNTU_ADMIN_PASSWORD: ${{ secrets.UBUNTU_ADMIN_PASSWORD }}
       TF_VAR_admin_password: ${{ secrets.UBUNTU_ADMIN_PASSWORD }}
       TF_IN_AUTOMATION: true
 
-      # Backend remoto (Azure Blob Storage con SAS)
-      AZURE_STORAGE_ACCOUNT: terraformsdevops
-      AZURE_STORAGE_CONTAINER: terraform
-      AZURE_STORAGE_KEY: infraestructura.tfstate
-      AZURE_STORAGE_SAS_TOKEN: ${{ secrets.AZURE_STORAGE_SAS_TOKEN }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Configure Git identity
-        run: |
-          git config --global user.name "Francisco Mateos"
-          git config --global user.email "francisco.mateos@glinttglobal.com"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.8.4
 
-      - name: Terraform Init (backend remoto)
-        run: |
-          echo "🔧 Initializing Terraform backend..."
-          terraform init \
-            -backend-config="storage_account_name=${AZURE_STORAGE_ACCOUNT}" \
-            -backend-config="container_name=${AZURE_STORAGE_CONTAINER}" \
-            -backend-config="key=${AZURE_STORAGE_KEY}" \
-            -backend-config="sas_token=${AZURE_STORAGE_SAS_TOKEN}" \
-            -backend-config="use_azuread_auth=false" | tee init-log.txt
-
-          echo "📄 Terraform Init Output:"
-          cat init-log.txt
-
-          if grep -q "Successfully configured the backend" init-log.txt; then
-            echo "✅ Backend remoto configurado correctamente."
-          else
-            echo "❌ ERROR: El backend remoto no se configuró. Revisa el SAS token o permisos del container."
-            exit 1
-          fi
-          
-      - name: Ensure Remote State Exists (import if missing)
-        shell: bash
-        run: |
-          echo "🔎 Checking if remote terraform.tfstate exists in Azure Storage..."
-          STATE_EXISTS=$(az storage blob show \
-            --account-name ${AZURE_STORAGE_ACCOUNT} \
-            --container-name ${AZURE_STORAGE_CONTAINER} \
-            --name ${AZURE_STORAGE_KEY} \
-            --sas-token ${AZURE_STORAGE_SAS_TOKEN} \
-            --query "properties.creationTime" -o tsv 2>/dev/null || echo "")
-
-          if [ -z "$STATE_EXISTS" ]; then
-            echo "⚠️  Remote state not found. Importing existing Azure resources..."
-            terraform import azurerm_virtual_network.vnet "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/virtualNetworks/vnet-fco" || true
-            terraform import azurerm_network_security_group.subnet_nsg "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/networkSecurityGroups/nsg-ubuntu-n8n" || true
-            terraform import azurerm_availability_set.n8n_asg "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Compute/availabilitySets/as-n8n" || true
-            terraform import azurerm_public_ip.ubuntu_pip "/subscriptions/${ARM_SUBSCRIPTION_ID}/resourceGroups/rg-espana-dev-001/providers/Microsoft.Network/publicIPAddresses/pip-ubuntu-n8n" || true
-            echo "✅ Resources imported successfully. Remote state should now be created."
-          else
-            echo "✅ Remote state already exists in Azure Storage (${STATE_EXISTS})."
-          fi
+      - name: Terraform Init
+        run: terraform init
 
       - name: Terraform Validate
         run: terraform validate
